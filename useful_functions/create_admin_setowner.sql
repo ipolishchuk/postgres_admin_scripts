@@ -28,25 +28,25 @@ cObjects CURSOR FOR
       and schema_name !~ 'pg_catalog|information_schema|^pg_temp_'
    UNION
    select
-       case c.relkind
-          when 'r' then 1 
-          when 'S' then 2
-          when 'v' then 3
-          when 'm' then 4
-          when 'c' then 5
-          when 'f' then 6
-       end as sort_order
-      ,case c.relkind
-          when 'r' then 'TABLE'
-          when 'S' then 'SEQUENCE'
-          when 'v' then 'VIEW'
-          when 'm' then 'MATERIALIZED VIEW'
-          when 'c' then 'TYPE'
-          when 'f' then 'FOREIGN TABLE'
-          else 'UNKNOWN RELKIN '||c.relkind
-       end as object
-      ,quote_ident(relnamespace::regnamespace::text) || '.' || quote_ident(c.relname) as name
-      ,c.relowner::regrole::text as current_owner
+      case c.relkind
+         when 'r' then 1 
+         when 'S' then 2
+         when 'v' then 3
+         when 'm' then 4
+         when 'c' then 5
+         when 'f' then 6
+      end as sort_order
+     ,case c.relkind
+         when 'r' then 'TABLE'
+         when 'S' then 'SEQUENCE'
+         when 'v' then 'VIEW'
+         when 'm' then 'MATERIALIZED VIEW'
+         when 'c' then 'TYPE'
+         when 'f' then 'FOREIGN TABLE'
+         else 'UNKNOWN RELKIN '||c.relkind
+      end as object
+     ,quote_ident(relnamespace::regnamespace::text) || '.' || quote_ident(c.relname) as name
+     ,c.relowner::regrole::text as current_owner
     from pg_class c
    where c.relkind not in ('i','t','p')
      and relnamespace::regnamespace::text !~ 'pg_catalog|information_schema|^pg_temp_'
@@ -55,19 +55,19 @@ cObjects CURSOR FOR
      and not (c.relkind='f' and c.relname in ('admin_setowner'))
    UNION
    select 
-        7 as sort_order,
-	'SERVER'  as object,
-	srvname as name,
-	srvowner::regrole::text as current_owner
+      7 as sort_order
+     ,'SERVER'  as object
+     ,srvname as name
+     ,srvowner::regrole::text as current_owner
     from pg_foreign_server
    where srvowner::regrole::text != pNewOwner
      and srvowner::regrole::text !~ pIgnoreTheseOwnersRegexp
    UNION
    select
-        8 as sort_order,
-        'FUNCTION'  as object,
-        pronamespace::regnamespace::text||'.'||proname as name,
-        proowner::regrole::text as current_owner
+      8 as sort_order
+     ,'FUNCTION'  as object
+     ,proc.oid::regprocedure::text as name
+     ,proowner::regrole::text as current_owner
     from pg_proc proc
     join pg_language l
       on l.oid=proc.prolang
